@@ -22,7 +22,7 @@ ui <- dashboardPage(
                   ),
                   dropdownMenu(type = "tasks", badgeStatus = "success",
                                taskItem(value = 90, color = "green",
-                                        "Documentation"
+                                        "Shopping"
                                ),
                                taskItem(value = 17, color = "aqua",
                                         "Project X"
@@ -40,7 +40,11 @@ ui <- dashboardPage(
   dashboardSidebar(
     sidebarMenu(
       menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard")),
-      menuItem("Controls", tabName = "controls", icon = icon("th"))
+      menuItem("Controls", tabName = "controls", icon = icon("th")),
+      menuItem("Events", tabName = "events", icon = icon("calendar")),
+      menuItem("Charts", tabName = "charts", icon = icon("area-chart")),
+      menuItem("Config", tabName = "config", icon = icon("home")),
+      menuItem("Help", tabName = "help", icon = icon("question"))
     )
   ),
   ## Body content
@@ -50,9 +54,16 @@ ui <- dashboardPage(
       tabItem(tabName = "dashboard",
               fluidRow(
                 box(title = "Histogram", background = "maroon", solidHeader = TRUE,plotOutput("plot1", height = 250))
-                
-                
+              ),
+              # infoBoxes with fill=FALSE
+              fluidRow(
+                # A static infoBox
+                infoBox("New Orders", 10 * 2, icon = icon("credit-card")),
+                # Dynamic infoBoxes
+                infoBoxOutput("progressBox"),
+                infoBoxOutput("approvalBox")
               )
+              
       ),
       
       # Second tab content
@@ -69,7 +80,40 @@ ui <- dashboardPage(
         )
       )
       
+      ),
+      # Third tab content
+      tabItem(tabName = "events",
+              fluidRow(
+                box(title = "Histogram", background = "blue", solidHeader = TRUE,plotOutput("plot2", height = 250))
+                
+                
+              )
+      ),
+      # Fourth tab content
+      tabItem(tabName = "charts",
+              fluidRow(
+                box(title = "Histogram", background = "green", solidHeader = TRUE,plotOutput("plot3", height = 250))
+                
+                
+              )
+      ),
+      # Fifth tab content
+      tabItem(tabName = "config",
+              fluidRow(
+                box(title = "Histogram", background = "red", solidHeader = TRUE,plotOutput("plot4", height = 250))
+                
+                
+              )
+      ),
+      # Six tab content
+      tabItem(tabName = "help",
+              fluidRow(
+                box(title = "Histogram", background = "yellow", solidHeader = TRUE,plotOutput("plot5", height = 250))
+                
+                
+              )
       )
+      
     )
   )
 )
@@ -82,6 +126,21 @@ server <- function(input, output) {
     data <- histdata[seq_len(input$slider)]
     hist(data)
   })
+  
+  output$progressBox <- renderInfoBox({
+    infoBox(
+      "Progress", paste0(25 + input$count, "%"), icon = icon("list"),
+      color = "purple"
+    )
+  })
+  output$approvalBox <- renderInfoBox({
+    infoBox(
+      "Approval", "80%", icon = icon("thumbs-up", lib = "glyphicon"),
+      color = "yellow"
+    )
+  })
+  
+  
 }
 
 shinyApp(ui, server)
