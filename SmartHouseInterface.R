@@ -1,7 +1,10 @@
 ## testes ##
 ## app.R ##
 ## teste ##
+library(shiny)
 library(shinydashboard)
+library(shinyjs)
+library(shinymaterial)
 
 ui <- dashboardPage(
   dashboardHeader(title = "Smart House Control",
@@ -68,7 +71,8 @@ ui <- dashboardPage(
       ),
       
       # Second tab content
-      tabItem(tabName = "controls", fluidRow(
+      tabItem(tabName = "controls", 
+      fluidRow(
         box(
           title = "Controls Ambient Temperature",background = "maroon", solidHeader = TRUE,
           sliderInput("slider", " Ambient Temperature Celsius Degrees:", 10, 30, 21)
@@ -78,6 +82,18 @@ ui <- dashboardPage(
         box(
           title = "Controls Water Temperature",background = "blue", solidHeader = TRUE,
           sliderInput("slider", " Water Temperature Celsius Degrees:", 10, 40, 25)
+        )
+      ),
+      fluidRow(
+        box(
+          title = "Controls Sound Volume ",background = "green", solidHeader = TRUE,
+          sliderInput("slider", " Sound Volume Control:", 0, 100, 35)
+        )
+      ),
+      fluidRow(
+        box(
+          title = "Controls Light Intensity",background = "yellow", solidHeader = TRUE,
+          sliderInput("slider", " Light Intensity:", 0, 100, 75)
         )
       )
       
@@ -101,18 +117,23 @@ ui <- dashboardPage(
       # Fifth tab content
       tabItem(tabName = "config",
               fluidRow(
-                box(title = "Histogram", background = "red", solidHeader = TRUE,plotOutput("plot4", height = 250))
-                
-                
+                box(title = "Rooms Config", background = "red", solidHeader = TRUE,numericInput("num1", h3("How many rooms do you have:"), value = 1)),
+                box(title = "People Config", background = "green", solidHeader = TRUE,numericInput("num2", h3("How many people live in the house:"), value = 1)),
+                box(title = "Swimming Pool Config", background = "blue", solidHeader = TRUE,checkboxInput("checkbox1", "Yes i have a Swimming Pool", value = TRUE) ),
+                box(title = "Garden Config", background = "yellow", solidHeader = TRUE,checkboxInput("checkbox2", "Yes i have a Garden", value = TRUE) )
+                  
               )
       ),
       # Six tab content
       tabItem(tabName = "help",
               fluidRow(
-                box(title = "Histogram", background = "yellow", solidHeader = TRUE,plotOutput("plot5", height = 250))
-                
-                
+                box(title = "Help Page", "If you need more help please visit our website...", 
+                                    actionButton(inputId='ab1', label="Visit Website", 
+                                                        icon = icon("th"), 
+                                                        onclick ="window.open('https://www.control4.com/solutions/smart-home-overview', '_blank')")
+                )
               )
+              
       )
       
     )
@@ -140,6 +161,7 @@ server <- function(input, output) {
       color = "yellow"
     )
   })
+  
   
   
 }
