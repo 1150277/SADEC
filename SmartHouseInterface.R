@@ -101,10 +101,18 @@ ui <- dashboardPage(
       # Third tab content
       tabItem(tabName = "events",
               fluidRow(
-                box(title = "Histogram", background = "blue", solidHeader = TRUE,plotOutput("plot2", height = 250))
-                
-                
+                box(title = "Data Evento", background = "blue", solidHeader = TRUE,
+                    (selectInput("select", h3("Escolha o Evento"),choices = list("Churrascada" = 1, "Almoço" = 2, "Jantar" = 3), selected = 1)) ,   
+                (dateInput("date",h3("Introduza a data"),value = "2018-01-01") ),
+                (sliderInput("slider1", h3("Escolha Hora"),min = 6, max = 23, value = 21)),
+                "Submit", submitButton("Submit")
+                   
+                )
+              ),
+              mainPanel(
+                box(title = "Sugestões", background = "green", solidHeader = TRUE,textOutput("selected_var"),textOutput("min_max"))
               )
+              
       ),
       # Fourth tab content
       tabItem(tabName = "charts",
@@ -160,6 +168,15 @@ server <- function(input, output) {
       "Approval", "80%", icon = icon("thumbs-up", lib = "glyphicon"),
       color = "yellow"
     )
+  })
+  
+  output$selected_var <- renderText({ 
+    "You have selected this"
+  })
+  
+  output$min_max <- renderText({ 
+    paste("As suas escolhas foram:","Data:",
+          input$date[1])
   })
   
   
