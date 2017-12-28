@@ -48,7 +48,8 @@ ui <- dashboardPage(
       menuItem("Events", tabName = "events", icon = icon("calendar")),
       menuItem("Charts", tabName = "charts", icon = icon("area-chart")),
       menuItem("Config", tabName = "config", icon = icon("home")),
-      menuItem("Help", tabName = "help", icon = icon("question"))
+      menuItem("Help", tabName = "help", icon = icon("question")),
+      menuItem("Teste", tabName = "teste", icon = icon("question"))
     )
   ),
   ## Body content
@@ -131,14 +132,37 @@ ui <- dashboardPage(
                                     actionButton(inputId='ab1', label="Visit Website", 
                                                         icon = icon("th"), 
                                                         onclick ="window.open('https://www.control4.com/solutions/smart-home-overview', '_blank')")
-                )
-              )
-              
-      )
-      
-    )
-  )
-)
+                ))),
+              # Seventh tab content
+              tabItem(tabName = "teste",
+                      fluidRow(
+                        box(title = "Organize event", "Choose your options and then click OK", 
+                        shinyApp(
+                          ui = fluidPage(
+                            selectInput("tipoevento", "Choose event type:",list("churrascada","outro")),
+                              textOutput("tipoevento_result"),
+                            selectInput("clima", "Choose type of weather:",list("Quente","Ameno")),
+                              textOutput("clima_result"),
+                            actionButton("goButton", "Run"),
+                              textOutput("message")
+                          ),
+                          server = function(input, output) {
+                            #output$tipoevento_result <- renderText({paste("You chose", input$tipoevento)})
+                            #output$clima_result <- renderText({paste("You chose", input$clima)})
+ 
+                            runandmessage <- eventReactive(input$goButton, ({paste0(" successfully ran!")}))
+                            output$message <- renderText ({runandmessage()})                           
+           
+                          } #close function
+                      )  #close shinyapp
+                     )#close box
+                    )#close fluidrow
+                        
+              )#close tabitem
+ 
+    ) #close tabitens
+  ) #close dashoboardbody
+) #close dashboardPage
 
 server <- function(input, output) {
   set.seed(122)
