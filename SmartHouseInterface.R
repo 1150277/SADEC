@@ -158,8 +158,60 @@ ui <- dashboardPage(
                             #output$tipoevento_result <- renderText({paste("You chose", input$tipoevento)})
                             #output$clima_result <- renderText({paste("You chose", input$clima)})
  
-                            runandmessage <- eventReactive(input$goButton, ({paste0(" successfully ran!")}))
-                            output$message <- renderText ({runandmessage()})                           
+                            runandmessage <- eventReactive(input$goButton, ({
+                              
+                              # RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
+                              #install.packages("lubridate")
+                              #install.packages("plyr")
+                              #install.packages("arules")
+                              #install.packages("data.table")
+                              #install.packages("DT")
+                              library("lubridate")
+                              library("plyr")
+                              library("arules")
+                              library(DT)
+                              library(data.table)
+                              rm(list=ls())
+                              setwd("C:/Users/jferreira/Dropbox/SADEC/Projecto 3")
+                              #kdb = knowledge database
+                              kdb = read.table(file = "datasetTeste1.csv", header = T, sep = ";")
+                              #criar coluna recomendação = tipo.config + valor
+                              kdb$recomendacao=sapply(paste0(kdb$tipo.config,kdb$valor, sep = " ", collapse = NULL),as.factor)
+                              #eliminar coluna id, tipo.config e valor
+                              kdb$id <- NULL
+                              kdb$tipo.config <- NULL
+                              kdb$valor <- NULL
+                              kdb$source <- NULL
+                              #filtrar condições -------------------------------------------------------------------
+                              kdb <- kdb[!kdb$Clima != paste(input$clima), ]
+                              kdb <- kdb[!kdb$Hora != "Dia", ]
+                              kdb <- kdb[!kdb$tipo.casa != "tipo1", ]
+                              kdb <- kdb[!kdb$tipo.evento != paste(input$tipoevento), ]
+                              #dim(kdb)
+                              rules <- apriori(kdb,control = list(verbose=F),
+                                               parameter = list(minlen=4, supp=0.001, conf=0.001))
+                              
+                              rules <- subset(rules, subset = rhs %pin% "recomendacao=")
+                              rules <- subset(rules, subset = lhs %ain% c( paste0("tipo.evento=",input$tipoevento)
+                                                                          ,paste0("Clima=",input$clima)
+                                                                          ,"Hora=Dia","tipo.casa=tipo1"))
+                              #paste("tipo.evento=","input$tipoevento"xx","")
+                              #write(rules, file="rules", sep=",", quote=TRUE, row.names=FALSE)                 
+                              #inspect(rules[1:4])    
+                              #rules
+                              rhs_list <- data.table( rhs = labels( rhs(rules) ), 
+                                                      quality(rules) )[ order(-lift), ]
+                              dfrhs_list<-as(rhs_list,"data.frame")
+                              recomendations<-dfrhs_list[c("rhs", "confidence")]
+                              # RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
+                              paste0(" successfully ran!",recomendations)
+                              #dataTableOutput(recomendations)
+                            })
+                            ) 
+                              
+                            
+                            output$message <- renderText ({runandmessage()}) 
+                            #output$recomendations = renderdataTable({runandmessage()})
            
                           } #close function
                       )  #close shinyapp
