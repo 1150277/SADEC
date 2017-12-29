@@ -144,7 +144,7 @@ ui <- dashboardPage(
               # Seventh tab content
               tabItem(tabName = "teste",
                       fluidRow(
-                        box(title = "Organize event", "Choose your options and then click OK", 
+                        box(title = "Organize event", "Choose your options and then click OK",width = 10, 
                         shinyApp(
                           ui = fluidPage(
                             selectInput("tipoevento", "Choose event type:",list("churrascada","outro")),
@@ -152,7 +152,8 @@ ui <- dashboardPage(
                             selectInput("clima", "Choose type of weather:",list("Quente","Ameno")),
                               textOutput("clima_result"),
                             actionButton("goButton", "Run"),
-                              textOutput("message")
+                            textOutput("message")
+                            ,tableOutput("table")
                           ),
                           server = function(input, output) {
                             #output$tipoevento_result <- renderText({paste("You chose", input$tipoevento)})
@@ -169,8 +170,8 @@ ui <- dashboardPage(
                               library("lubridate")
                               library("plyr")
                               library("arules")
-                              library(DT)
-                              library(data.table)
+                              library("DT")
+                              library("data.table")
                               rm(list=ls())
                               setwd("C:/Users/jferreira/Dropbox/SADEC/Projecto 3")
                               #kdb = knowledge database
@@ -187,32 +188,30 @@ ui <- dashboardPage(
                               kdb <- kdb[!kdb$Hora != "Dia", ]
                               kdb <- kdb[!kdb$tipo.casa != "tipo1", ]
                               kdb <- kdb[!kdb$tipo.evento != paste(input$tipoevento), ]
-                              #dim(kdb)
+                              #apriori
                               rules <- apriori(kdb,control = list(verbose=F),
                                                parameter = list(minlen=4, supp=0.001, conf=0.001))
+                              rules<- sort(rules, by="confidence")
                               
                               rules <- subset(rules, subset = rhs %pin% "recomendacao=")
                               rules <- subset(rules, subset = lhs %ain% c( paste0("tipo.evento=",input$tipoevento)
                                                                           ,paste0("Clima=",input$clima)
                                                                           ,"Hora=Dia","tipo.casa=tipo1"))
-                              #paste("tipo.evento=","input$tipoevento"xx","")
+                              
                               #write(rules, file="rules", sep=",", quote=TRUE, row.names=FALSE)                 
-                              #inspect(rules[1:4])    
-                              #rules
                               rhs_list <- data.table( rhs = labels( rhs(rules) ), 
                                                       quality(rules) )[ order(-lift), ]
                               dfrhs_list<-as(rhs_list,"data.frame")
-                              recomendations<-dfrhs_list[c("rhs", "confidence")]
+                              dfrhs_list$recomendation<-substr(dfrhs_list$rhs,regexpr('=', dfrhs_list$rhs)+1,nchar(dfrhs_list$rhs)-1)
+                              recomendations<-dfrhs_list[c("recomendation", "confidence")]
                               # RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
-                              paste0(" successfully ran!",recomendations)
-                              #dataTableOutput(recomendations)
+                              output$table <- renderTable ({recomendations[1:2]})
+
                             })
                             ) 
-                              
                             
-                            output$message <- renderText ({runandmessage()}) 
-                            #output$recomendations = renderdataTable({runandmessage()})
-           
+  
+                            output$message <- renderText ({runandmessage()})
                           } #close function
                       )  #close shinyapp
                      )#close box
