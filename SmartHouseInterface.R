@@ -5,6 +5,11 @@ library(shiny)
 library(shinydashboard)
 library(shinyjs)
 library(shinymaterial)
+library(readr)
+library(ggplot2)
+library(scales)
+
+
 
 
 ui <- dashboardPage(
@@ -82,25 +87,25 @@ ui <- dashboardPage(
       fluidRow(
         box(
           title = "Controls Ambient Temperature",background = "maroon", solidHeader = TRUE,
-          sliderInput("slider", " Ambient Temperature Celsius Degrees:", 10, 30, 21)
+          sliderInput("slider1", " Ambient Temperature Celsius Degrees:", 10, 30, 21)
         )
       ),
       fluidRow(
         box(
           title = "Controls Water Temperature",background = "blue", solidHeader = TRUE,
-          sliderInput("slider", " Water Temperature Celsius Degrees:", 10, 40, 25)
+          sliderInput("slider2", " Water Temperature Celsius Degrees:", 10, 40, 25)
         )
       ),
       fluidRow(
         box(
           title = "Controls Sound Volume ",background = "green", solidHeader = TRUE,
-          sliderInput("slider", " Sound Volume Control:", 0, 100, 35)
+          sliderInput("slider3", " Sound Volume Control:", 0, 100, 35)
         )
       ),
       fluidRow(
         box(
           title = "Controls Light Intensity",background = "yellow", solidHeader = TRUE,
-          sliderInput("slider", " Light Intensity:", 0, 100, 75)
+          sliderInput("slider4", " Light Intensity:", 0, 100, 75)
         )
       )
       
@@ -111,7 +116,7 @@ ui <- dashboardPage(
                 box(title = "Event Date", background = "blue", solidHeader = TRUE,
                     (selectInput("select", h3("Choose Event"),choices = list("Barbecue" = 1, "Lunch" = 2, "Dinner" = 3), selected = 1)) ,   
                 (dateInput("date",h3("Choose Date"),value = "2018-01-01") ),
-                (sliderInput("slider1", h3("Choose Hour"),min = 6, max = 23, value = 21)),
+                (sliderInput("slider5", h3("Choose Hour"),min = 6, max = 23, value = 21)),
                  submitButton("Submit")
                    
                 )
@@ -124,10 +129,13 @@ ui <- dashboardPage(
       # Fourth tab content
       tabItem(tabName = "charts",
               fluidRow(
-                box(title = "Ambient Temperature Histogram", background = "green", solidHeader = TRUE,plotOutput("plot2", height = 250)),
-                box(title = " Water Temperature Histogram", background = "yellow", solidHeader = TRUE,plotOutput("plot3", height = 250))
-                
-                
+                box(title = "Ambient Temperature Histogram", background = "red", solidHeader = TRUE,
+                    sliderInput("slider6", "Time", min = Sys.Date() - 10,max =Sys.Date() + 10,value=Sys.Date(),timeFormat="%d-%m-%Y"),
+                    plotOutput(outputId = "plot2", height = 250)),
+               
+                box(title = " Water Temperature Histogram", background = "yellow", solidHeader = TRUE,
+                    sliderInput("slider7", "Time", min = Sys.Date() - 10,max =Sys.Date() + 10,value=Sys.Date(),timeFormat="%d-%m-%Y"),
+                    plotOutput("plot3", height = 250))
               )
       ),
       # Fifth tab content
@@ -230,24 +238,55 @@ ui <- dashboardPage(
   ) #close dashoboardbody
 ) #close dashboardPage
 
-server <- function(input, output) {
+server <- function(input, output,session) {
   set.seed(122)
-  histdata <- rnorm(500)
   
-  output$plot1 <- renderPlot({
-    data <- histdata[seq_len(input$slider)]
-    hist(data)
-  })
+  
+  # Set the working directory
+  setwd("C:/Fred_Data/ISEP/SADEC/SADEC/Projecto 3/Projecto R Fred/SADEC")
+  
+  
+  # Read CSV into R
+  
+  DataAmbTemp <- read_delim("data/Ambient_Temp.csv", 
+                            ";", escape_double = FALSE, col_types = cols(date = col_date(format = "%d/%m/%Y")), 
+                            trim_ws = TRUE)
+  
+  
+  DataWaterTemp <- read_delim("data/Water_Temp.csv", 
+                              ";", escape_double = FALSE, col_types = cols(date = col_date(format = "%d/%m/%Y")), 
+                              trim_ws = TRUE)
+  
   
   output$plot2 <- renderPlot({
-    data <- histdata[seq_len(input$slider)]
-    hist(data)
+    x1<- input$slider6 - 5
+    x2<-input$slider6 + 5
+    
+    ggplot(data=DataAmbTemp, aes(x=date, y=insideTemperature)) +
+      geom_bar(stat="identity", fill="steelblue" )+
+      geom_text(aes(label=insideTemperature), color="white")+
+      theme_minimal()+ggtitle("Ambient Temperature") +
+      scale_x_date(date_breaks = "1 day", 
+                   labels=date_format("%d-%m-%Y"),
+                   limits = as.Date(c(x1,x2)))
   })
   
+ 
   
   output$plot3 <- renderPlot({
-    data <- histdata[seq_len(input$slider)]
-    hist(data)
+  
+
+    
+    x11<- input$slider7 - 5
+    x12<-input$slider7 + 5
+    
+    ggplot(data=DataWaterTemp, aes(x=date, y=waterTemperature)) +
+      geom_bar(stat="identity", fill="steelblue" )+
+      geom_text(aes(label=waterTemperature), color="white")+
+      theme_minimal()+ggtitle("Water Temperature") +
+      scale_x_date(date_breaks = "1 day", 
+                   labels=date_format("%d-%m-%Y"),
+                   limits = as.Date(c(x11,x12)))
   })
   
   output$progressBox <- renderInfoBox({
