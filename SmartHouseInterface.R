@@ -6,6 +6,7 @@ library(shinydashboard)
 library(shinyjs)
 library(shinymaterial)
 
+
 ui <- dashboardPage(
   dashboardHeader(title = "Smart House Control",
                   dropdownMenu(type = "notifications",
@@ -57,9 +58,14 @@ ui <- dashboardPage(
     tabItems(
       # First tab content
       tabItem(tabName = "dashboard",
-              fluidRow(
-                box(title = "Histogram", background = "maroon", solidHeader = TRUE,plotOutput("plot1", height = 250))
+              
+              tags$iframe( seamless = "seamless",  src="https://forecast.io/embed/#lat=41.1495&lon=-8.6108&name=Porto&color=#00aaff&font=Georgia&units=ca",
+                height = 300, width = 300
               ),
+              
+             
+              tags$iframe( src="http://www.youtube.com/embed/Ko2WZrUV1QI?autoplay=1", width=600 ,height=300, frameborder=0),
+              
               # infoBoxes with fill=FALSE
               fluidRow(
                 # A static infoBox
@@ -102,23 +108,24 @@ ui <- dashboardPage(
       # Third tab content
       tabItem(tabName = "events",
               fluidRow(
-                box(title = "Data Evento", background = "blue", solidHeader = TRUE,
-                    (selectInput("select", h3("Escolha o Evento"),choices = list("Churrascada" = 1, "Almoço" = 2, "Jantar" = 3), selected = 1)) ,   
-                (dateInput("date",h3("Introduza a data"),value = "2018-01-01") ),
-                (sliderInput("slider1", h3("Escolha Hora"),min = 6, max = 23, value = 21)),
-                "Submit", submitButton("Submit")
+                box(title = "Event Date", background = "blue", solidHeader = TRUE,
+                    (selectInput("select", h3("Choose Event"),choices = list("Barbecue" = 1, "Lunch" = 2, "Dinner" = 3), selected = 1)) ,   
+                (dateInput("date",h3("Choose Date"),value = "2018-01-01") ),
+                (sliderInput("slider1", h3("Choose Hour"),min = 6, max = 23, value = 21)),
+                 submitButton("Submit")
                    
                 )
               ),
               mainPanel(
-                box(title = "Sugestões", background = "green", solidHeader = TRUE,textOutput("selected_var"),textOutput("min_max"))
+                box(title = "Recommendations", background = "green", solidHeader = TRUE,textOutput("selected_var"),textOutput("min_max"))
               )
               
       ),
       # Fourth tab content
       tabItem(tabName = "charts",
               fluidRow(
-                box(title = "Histogram", background = "green", solidHeader = TRUE,plotOutput("plot3", height = 250))
+                box(title = "Ambient Temperature Histogram", background = "green", solidHeader = TRUE,plotOutput("plot2", height = 250)),
+                box(title = " Water Temperature Histogram", background = "yellow", solidHeader = TRUE,plotOutput("plot3", height = 250))
                 
                 
               )
@@ -228,6 +235,17 @@ server <- function(input, output) {
   histdata <- rnorm(500)
   
   output$plot1 <- renderPlot({
+    data <- histdata[seq_len(input$slider)]
+    hist(data)
+  })
+  
+  output$plot2 <- renderPlot({
+    data <- histdata[seq_len(input$slider)]
+    hist(data)
+  })
+  
+  
+  output$plot3 <- renderPlot({
     data <- histdata[seq_len(input$slider)]
     hist(data)
   })
