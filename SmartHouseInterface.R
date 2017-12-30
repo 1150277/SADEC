@@ -168,7 +168,11 @@ ui <- dashboardPage(
                               textOutput("clima_result"),
                             actionButton("goButton", "Run"),
                             textOutput("message")
-                            ,tableOutput("table")
+                            ,tableOutput("table"),
+                            #isto oculta uma mensagem de erro que não estou a conseguir perceber
+                            tags$style(type="text/css",
+                                       ".shiny-output-error { visibility: hidden; }",
+                                       ".shiny-output-error:before { visibility: hidden; }")
                           ),
                           server = function(input, output) {
                             #output$tipoevento_result <- renderText({paste("You chose", input$tipoevento)})
@@ -192,11 +196,10 @@ ui <- dashboardPage(
                               #kdb = knowledge database
                               kdb = read.table(file = "datasetTeste1.csv", header = T, sep = ";")
                               #criar coluna recomendação = tipo.config + valor
-                              kdb$recomendacao=sapply(paste0(kdb$tipo.config,kdb$valor, sep = " ", collapse = NULL),as.factor)
+                              kdb$recomendacao=sapply(paste0(kdb$tipo.config),as.factor)
                               #eliminar coluna id, tipo.config e valor
                               kdb$id <- NULL
                               kdb$tipo.config <- NULL
-                              kdb$valor <- NULL
                               kdb$source <- NULL
                               #filtrar condições -------------------------------------------------------------------
                               kdb <- kdb[!kdb$Clima != paste(input$clima), ]
@@ -205,22 +208,27 @@ ui <- dashboardPage(
                               kdb <- kdb[!kdb$tipo.evento != paste(input$tipoevento), ]
                               #apriori
                               rules <- apriori(kdb,control = list(verbose=F),
-                                               parameter = list(minlen=4, supp=0.001, conf=0.001))
+                                               parameter = list(minlen=5, supp=0.001, conf=0.001))
                               rules<- sort(rules, by="confidence")
                               
                               rules <- subset(rules, subset = rhs %pin% "recomendacao=")
+                              rules <- subset(rules, subset = lhs %pin% "valor=")
                               rules <- subset(rules, subset = lhs %ain% c( paste0("tipo.evento=",input$tipoevento)
                                                                           ,paste0("Clima=",input$clima)
                                                                           ,"Hora=Dia","tipo.casa=tipo1"))
                               
                               #write(rules, file="rules", sep=",", quote=TRUE, row.names=FALSE)                 
-                              rhs_list <- data.table( rhs = labels( rhs(rules) ), 
+                              myruleslist <- data.table( lhs = labels( lhs(rules) ),rhs = labels( rhs(rules) ), 
                                                       quality(rules) )[ order(-lift), ]
-                              dfrhs_list<-as(rhs_list,"data.frame")
-                              dfrhs_list$recomendation<-substr(dfrhs_list$rhs,regexpr('=', dfrhs_list$rhs)+1,nchar(dfrhs_list$rhs)-1)
-                              recomendations<-dfrhs_list[c("recomendation", "confidence")]
+                              df_myruleslist<-as(myruleslist,"data.frame")
+                              df_myruleslist$recomendation<-substr(df_myruleslist$rhs,regexpr('=', df_myruleslist$rhs)+1,nchar(df_myruleslist$rhs)-1)
+                              df_myruleslist$value<-substr(df_myruleslist$lhs,
+                                                          regexpr('valor=', df_myruleslist$lhs)+6,nchar(df_myruleslist$lhs))
+                              df_myruleslist$value<-substr(df_myruleslist$value,1,regexpr(',', df_myruleslist$value)-1)
+
+                              recomendations<-df_myruleslist[c("recomendation", "value","confidence")]
                               # RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
-                              output$table <- renderTable ({recomendations[1:2]})
+                              output$table <- renderTable ({recomendations[1:3]})
 
                             })
                             ) 
