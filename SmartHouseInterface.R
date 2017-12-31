@@ -9,6 +9,8 @@ library(readr)
 library(ggplot2)
 library(scales)
 
+#working.directory<-"c:/Fred_Data/ISEP/SADEC/SADEC/Projecto 3/Projecto R Fred/SADEC"
+working.directory<-"C:/Users/jferreira/Dropbox/SADEC/Projecto 3"
 
 ui <- dashboardPage(
   dashboardHeader(title = "Smart House Control",
@@ -195,8 +197,9 @@ ui <- dashboardPage(
                               library("DT")
                               library("data.table")
                               rm(list=ls())
-                              setwd("C:/Users/jferreira/Dropbox/SADEC/Projecto 3")
+                             # setwd("C:/Users/jferreira/Dropbox/SADEC/Projecto 3")
                              # setwd("C:/Fred_Data/ISEP/SADEC/SADEC/Projecto 3/Projecto R Fred/SADEC")
+                              setwd(working.directory)
                               #kdb = knowledge database
                               kdb = read.table(file = "datasetTeste1.csv", header = T, sep = ";")
                               #criar coluna recomendação = tipo.config + valor
@@ -255,49 +258,50 @@ server <- function(input, output,session) {
   
   
   # Set the working directory
-  setwd("C:/Fred_Data/ISEP/SADEC/SADEC/Projecto 3/Projecto R Fred/SADEC")
-  
-  
+  # setwd("C:/Fred_Data/ISEP/SADEC/SADEC/Projecto 3/Projecto R Fred/SADEC")
+  #del#  setwd(working.directory)
+  #del#  
+  #del#
   # Read CSV into R
   
-  DataAmbTemp <- read_delim("data/Ambient_Temp.csv", 
-                            ";", escape_double = FALSE, col_types = cols(date = col_date(format = "%d/%m/%Y")), 
-                            trim_ws = TRUE)
+  #del#DataAmbTemp <- read_delim("data/Ambient_Temp.csv", 
+  #del#                          ";", escape_double = FALSE, col_types = cols(date = col_date(format = "%d/%m/%Y")), 
+  #del#                          trim_ws = TRUE)
   
   
-  DataWaterTemp <- read_delim("data/Water_Temp.csv", 
-                              ";", escape_double = FALSE, col_types = cols(date = col_date(format = "%d/%m/%Y")), 
-                              trim_ws = TRUE)
+  #del#DataWaterTemp <- read_delim("data/Water_Temp.csv", 
+  #del#                            ";", escape_double = FALSE, col_types = cols(date = col_date(format = "%d/%m/%Y")), 
+  #del#                            trim_ws = TRUE)
   
   
-  output$plot2 <- renderPlot({
-    x1<- input$slider6 - 5
-    x2<-input$slider6 + 5
+  #del#output$plot2 <- renderPlot({
+  #del#  x1<- input$slider6 - 5
+  #del#  x2<-input$slider6 + 5
     
-    ggplot(data=DataAmbTemp, aes(x=date, y=insideTemperature)) +
-      geom_bar(stat="identity", fill="steelblue", position = 'dodge' )+
-      geom_text(aes(label=insideTemperature), color="white",position = position_dodge(width = 1),vjust = 1,size=3 )+
-      theme_minimal()+ggtitle("Ambient Temperature") +
-      scale_x_date(date_breaks = "1 day", 
-                   labels=date_format("%d-%m-%Y"),
-                   limits = as.Date(c(x1,x2)))
-  })
+  #del#  ggplot(data=DataAmbTemp, aes(x=date, y=insideTemperature)) +
+  #del#    geom_bar(stat="identity", fill="steelblue", position = 'dodge' )+
+  #del#    geom_text(aes(label=insideTemperature), color="white",position = position_dodge(width = 1),vjust = 1,size=3 )+
+  #del#    theme_minimal()+ggtitle("Ambient Temperature") +
+  #del#    scale_x_date(date_breaks = "1 day", 
+  #del#                 labels=date_format("%d-%m-%Y"),
+  #del#                 limits = as.Date(c(x1,x2)))
+  #del#})
   
- 
   
-  output$plot3 <- renderPlot({
+  
+  #del#output$plot3 <- renderPlot({
     
-    x11<- input$slider7 - 5
-    x12<-input$slider7 + 5
+  #del#  x11<- input$slider7 - 5
+  #del#  x12<-input$slider7 + 5
     
-    ggplot(data=DataWaterTemp, aes(x=date, y=waterTemperature)) +
-    geom_bar(stat="identity", fill="steelblue", position = 'dodge' )+
-    geom_text(aes(label=waterTemperature), color="white",position = position_dodge(width = 1),vjust = 1,size=3 )+
-      theme_minimal()+ggtitle("Water Temperature") +
-      scale_x_date(date_breaks = "1 day", 
-                   labels=date_format("%d-%m-%Y"),
-                   limits = as.Date(c(x11,x12)))
-  })
+  #del#  ggplot(data=DataWaterTemp, aes(x=date, y=waterTemperature)) +
+  #del#    geom_bar(stat="identity", fill="steelblue", position = 'dodge' )+
+  #del#    geom_text(aes(label=waterTemperature), color="white",position = position_dodge(width = 1),vjust = 1,size=3 )+
+  #del#    theme_minimal()+ggtitle("Water Temperature") +
+  #del#    scale_x_date(date_breaks = "1 day", 
+  #del#                 labels=date_format("%d-%m-%Y"),
+  #del#                 limits = as.Date(c(x11,x12)))
+  #del#})
   
   output$progressBox <- renderInfoBox({
     infoBox(
