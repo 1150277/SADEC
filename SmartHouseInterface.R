@@ -10,8 +10,6 @@ library(ggplot2)
 library(scales)
 
 
-
-
 ui <- dashboardPage(
   dashboardHeader(title = "Smart House Control",
                   dropdownMenu(type = "notifications",
@@ -122,7 +120,8 @@ ui <- dashboardPage(
                 )
               ),
               mainPanel(
-                box(title = "Recommendations", background = "green", solidHeader = TRUE,textOutput("selected_var"),textOutput("min_max"))
+                box(title = "Recommendations", background = "green", solidHeader = TRUE,textOutput("selected_var"),
+                    textOutput("selected_event"),textOutput("selected_date"),textOutput("selected_hour"))
               )
               
       ),
@@ -131,11 +130,15 @@ ui <- dashboardPage(
               fluidRow(
                 box(title = "Ambient Temperature Histogram", background = "red", solidHeader = TRUE,
                     sliderInput("slider6", "Time", min = Sys.Date() - 10,max =Sys.Date() + 10,value=Sys.Date(),timeFormat="%d-%m-%Y"),
-                    plotOutput(outputId = "plot2", height = 250)),
+                    submitButton("Submit"),
+                    plotOutput(outputId = "plot2", height = 250)
+                   ),
                
                 box(title = " Water Temperature Histogram", background = "yellow", solidHeader = TRUE,
                     sliderInput("slider7", "Time", min = Sys.Date() - 10,max =Sys.Date() + 10,value=Sys.Date(),timeFormat="%d-%m-%Y"),
-                    plotOutput("plot3", height = 250))
+                    submitButton("Submit"),
+                    plotOutput("plot3", height = 250)
+                   )
               )
       ),
       # Fifth tab content
@@ -193,6 +196,7 @@ ui <- dashboardPage(
                               library("data.table")
                               rm(list=ls())
                               setwd("C:/Users/jferreira/Dropbox/SADEC/Projecto 3")
+                             # setwd("C:/Fred_Data/ISEP/SADEC/SADEC/Projecto 3/Projecto R Fred/SADEC")
                               #kdb = knowledge database
                               kdb = read.table(file = "datasetTeste1.csv", header = T, sep = ";")
                               #criar coluna recomendação = tipo.config + valor
@@ -271,8 +275,8 @@ server <- function(input, output,session) {
     x2<-input$slider6 + 5
     
     ggplot(data=DataAmbTemp, aes(x=date, y=insideTemperature)) +
-      geom_bar(stat="identity", fill="steelblue" )+
-      geom_text(aes(label=insideTemperature), color="white")+
+      geom_bar(stat="identity", fill="steelblue", position = 'dodge' )+
+      geom_text(aes(label=insideTemperature), color="white",position = position_dodge(width = 1),vjust = 1,size=3 )+
       theme_minimal()+ggtitle("Ambient Temperature") +
       scale_x_date(date_breaks = "1 day", 
                    labels=date_format("%d-%m-%Y"),
@@ -282,15 +286,13 @@ server <- function(input, output,session) {
  
   
   output$plot3 <- renderPlot({
-  
-
     
     x11<- input$slider7 - 5
     x12<-input$slider7 + 5
     
     ggplot(data=DataWaterTemp, aes(x=date, y=waterTemperature)) +
-      geom_bar(stat="identity", fill="steelblue" )+
-      geom_text(aes(label=waterTemperature), color="white")+
+    geom_bar(stat="identity", fill="steelblue", position = 'dodge' )+
+    geom_text(aes(label=waterTemperature), color="white",position = position_dodge(width = 1),vjust = 1,size=3 )+
       theme_minimal()+ggtitle("Water Temperature") +
       scale_x_date(date_breaks = "1 day", 
                    labels=date_format("%d-%m-%Y"),
@@ -314,9 +316,16 @@ server <- function(input, output,session) {
     "You have selected this"
   })
   
-  output$min_max <- renderText({ 
-    paste("As suas escolhas foram:","Data:",
-          input$date[1])
+  output$selected_event <- renderText({ 
+    paste("Event:", input$select)
+  })
+  
+  output$selected_date <- renderText({ 
+    paste("Data:", input$date[1])
+  })
+  
+  output$selected_hour <- renderText({ 
+    paste("Hour:", input$slider5)
   })
   
   
