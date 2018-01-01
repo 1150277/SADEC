@@ -1,0 +1,35 @@
+source;tipo casa;tipo evento;tipo config;valor;Clima;Hora;id
+E;tipo1;churrascada;luz;mínimo;Quente;Dia;e1
+E;tipo1;churrascada;agua;20 graus;Quente;Dia;e1
+E;tipo1;churrascada;cerveja;;Quente;Dia;e1
+E;tipo1;churrascada;limpeza;;Quente;Dia;e1
+E;tipo1;churrascada;carne;;Quente;Dia;e1
+E;tipo1;churrascada;verifica grelhador;;Quente;Dia;e1
+E;tipo1;churrascada;luz;máximo;Quente;Noite;e2
+E;tipo1;churrascada;agua;20 graus;Quente;Noite;e2
+E;tipo1;churrascada;cerveja;;Quente;Noite;e2
+E;tipo1;churrascada;limpeza;;Quente;Noite;e2
+E;tipo1;churrascada;carne;;Quente;Noite;e2
+E;tipo1;churrascada;verifica grelhador;;Quente;Noite;e2
+E;tipo1;churrascada;luz;médio;Ameno;Dia;e3
+E;tipo1;churrascada;agua;25 graus;Ameno;Dia;e3
+E;tipo1;churrascada;cerveja;;Ameno;Dia;e3
+E;tipo1;churrascada;limpeza;;Ameno;Dia;e3
+E;tipo1;churrascada;carne;;Ameno;Dia;e3
+E;tipo1;churrascada;verifica grelhador;;Ameno;Dia;e3
+H;tipo1;churrascada;luz;mínimo;Quente;Dia;e4
+H;tipo1;churrascada;agua;20 graus;Quente;Dia;e4
+H;tipo1;churrascada;cerveja;;Quente;Dia;e4
+H;tipo1;churrascada;limpeza;;Quente;Dia;e4
+H;tipo1;churrascada;carne;;Quente;Dia;e4
+H;tipo1;churrascada;verifica grelhador;;Quente;Dia;e4
+C;tipo1;churrascada;luz;mínimo;Quente;Dia;e5
+C;tipo1;churrascada;agua;18 graus;Quente;Dia;e5
+C;tipo1;churrascada;cerveja;;Quente;Dia;e5
+C;tipo1;churrascada;limpeza;;Quente;Dia;e5
+C;tipo1;churrascada;carne;;Quente;Dia;e5
+C;tipo1;churrascada;luz;médio;Quente;Dia;e6
+C;tipo1;churrascada;agua;17 graus;Quente;Dia;e6
+C;tipo1;churrascada;cerveja;;Quente;Dia;e6
+C;tipo1;churrascada;limpeza;;Quente;Dia;e6
+C;tipo1;churrascada;carne;;Quente;Dia;e6
