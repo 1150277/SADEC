@@ -1,13 +1,16 @@
 ## testes ##
 ## app.R ##
 ## teste ##
-library(shiny)
+library(shiny) 
 library(shinydashboard)
 library(shinyjs)
 library(shinymaterial)
 library(readr)
 library(ggplot2)
-library(scales)
+library(scales) 
+
+# Set the working directory
+# setwd("C:/Fred_Data/ISEP/SADEC/SADEC/Projecto 3/Projecto R Fred/SADEC")
 
 #working.directory<-"c:/Fred_Data/ISEP/SADEC/SADEC/Projecto 3/Projecto R Fred/SADEC"
 working.directory<-"C:/Users/jferreira/Dropbox/SADEC/Projecto 3"
