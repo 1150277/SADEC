@@ -199,6 +199,8 @@ ui <- dashboardPage(
                       #install.packages("arules")
                       #install.packages("data.table")
                       #install.packages("DT")
+                      #install.packages("XLConnect")
+                      library("XLConnect")
                       library("lubridate")
                       library("plyr")
                       library("arules")
@@ -209,7 +211,14 @@ ui <- dashboardPage(
                       # setwd("C:/Fred_Data/ISEP/SADEC/SADEC/Projecto 3/Projecto R Fred/SADEC")
                       setwd(working.directory)
                       #kdb = knowledge database
-                      kdb = read.table(file = "datasetTeste1.csv", header = T, sep = ";")
+                        #kdb = read.table(file = "datasetKDB.xlsx", header = T, sep = ";")
+                      
+                      fileXls <- paste(working.directory,"datasetKDB.xlsx",sep='/')
+                      exc <- loadWorkbook(fileXls, create = TRUE)
+                      
+                      kdb <- readWorksheet(exc,"datasetkdb", header = TRUE)
+                      kdb<-as(kdb,"data.frame")
+                      
                       #criar coluna recomendação = tipo.config + valor
                       kdb$recomendacao=sapply(paste0(kdb$tipo.config),as.factor)
                       #eliminar coluna id, tipo.config e valor
@@ -222,6 +231,12 @@ ui <- dashboardPage(
                       kdb <- kdb[!kdb$tipo.casa != "tipo1", ]
                       kdb <- kdb[!kdb$tipo.evento != paste(input$tipoevento), ]
                       #apriori
+                      kdb$tipo.casa=sapply(kdb$tipo.casa,as.factor)
+                      kdb$tipo.evento=sapply(kdb$tipo.evento,as.factor)
+                      kdb$valor=sapply(kdb$valor,as.factor)
+                      kdb$Clima=sapply(kdb$Clima,as.factor)
+                      kdb$Hora=sapply(kdb$Hora,as.factor)
+    
                       rules <- apriori(kdb,control = list(verbose=F),
                                        parameter = list(minlen=5, supp=0.001, conf=0.001))
                       rules<- sort(rules, by="confidence")
@@ -244,6 +259,23 @@ ui <- dashboardPage(
                       recomendations<-df_myruleslist[c("recomendation", "value","confidence")]
                       # RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
                       output$table <- renderTable ({recomendations[1:3]},spacing = "xs")
+                      
+
+                      #1º copia conteudo do datasetkdb.xls para esta df
+                      datasetkdb <- readWorksheet(exc,"datasetkdb", header = TRUE)                      
+                      #2º abre o datasetkdb.xls e escreve lá tudo o que estava mais o novo registo
+                      #fileXls <- paste(working.directory,"datasetKDB.xlsx",sep='/')
+                      #exc <- loadWorkbook(fileXls, create = TRUE)
+                      datasetkdb <- rbind( datasetkdb, data.frame("source"="a", 
+                                                    "tipo.casa"="tipo1", 
+                                                    "tipo.evento"=input$tipoevento,
+                                                     "tipo.config"="cerveja", 
+                                                    "valor"="na", 
+                                                    "Clima"=paste(input$clima), 
+                                                    "Hora"="dia", 
+                                                    "id"="new"))
+                      writeWorksheet(exc, datasetkdb, sheet = "datasetkdb", startRow = 1, startCol = 1)
+                      saveWorkbook(exc)
                       
                     }) #close event reactive parameter
                     ) #close event reactive
