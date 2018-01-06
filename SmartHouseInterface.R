@@ -61,7 +61,8 @@ ui <- dashboardPage(
     sidebarMenu(
       menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard")),
       menuItem("Controls", tabName = "controls", icon = icon("th")),
-      menuItem("Schedulle Event", tabName = "sevent", icon = icon("calendar")),
+      menuItem("Events", tabName = "events", icon = icon("calendar")),
+      menuItem("Schedulle Event", tabName = "sevent", icon = icon("calendar-plus-o")),
       menuItem("Recomendations", tabName = "recomendations", icon = icon("cubes")),
       menuItem("Charts", tabName = "charts", icon = icon("area-chart")),
       menuItem("Config", tabName = "config", icon = icon("home")),
@@ -126,16 +127,21 @@ ui <- dashboardPage(
       tabItem(tabName = "events",
               fluidRow(
                 box(title = "Event Date", background = "blue", solidHeader = TRUE,
-                    (selectInput("select", h3("Choose Event"),choices = list("Barbecue" = 1, "Lunch" = 2, "Dinner" = 3), selected = 1)) ,   
-                    (dateInput("date",h3("Choose Date"),value = "2018-01-01") ),
-                    (sliderInput("slider5", h3("Choose Hour"),min = 6, max = 23, value = 21)),
+                    selectInput("select_source", "Choose Source",choices = list("Specialist" = 'E', "Community" = 'C', "House" = 'H'),selected='E'),
+                    selectInput("select_clima", "Choose Type of Weather:",list("Hot","Mild","Cold")),  
+                    selectInput("select_hora", "Choose Time Range:",list("Day time","Night time")), 
+                    sliderInput("select_date", "Choose Date", min = Sys.Date() - 10,max =Sys.Date() + 10,value=Sys.Date(),timeFormat="%d-%m-%Y"),
                     submitButton("Submit")
                     
                 )
               ),
               mainPanel(
-                box(title = "Recommendations", background = "green", solidHeader = TRUE,textOutput("selected_var"),
-                    textOutput("selected_event"),textOutput("selected_date"),textOutput("selected_hour"))
+                box(title = "Events", background = "green", solidHeader = FALSE,textOutput("selected_var"),
+                    textOutput("selected_source"),textOutput("selected_clima"),textOutput("selected_hora"),
+                    textOutput("selected_date")),
+                
+                box(title = "Events", background = "red", solidHeader = FALSE, tableOutput("table_events"))
+                
               )
               
       ),
@@ -179,7 +185,7 @@ ui <- dashboardPage(
               
                   
                   box(title = "Event Date", background = "blue", solidHeader = TRUE,
-                     selectInput("tipoevento","Choose event type:",list("Barbecue","Other"),width = '300px'), 
+                     selectInput("tipoevento","Choose event type:",list("Barbecue","Lunch","Dinner","Other"),width = '300px'), 
                       selectInput("clima", "Choose type of weather:",list("Hot","Mild","Cold")),  
                       selectInput("hora", "Choose time range:",list("Day time","Night time")), 
                      actionButton("goButton", "Ask for recomendations"),submitButton("Submit")
@@ -210,7 +216,7 @@ ui <- dashboardPage(
                 
                   
                 box(title = "Event Date", background = "blue", solidHeader = TRUE,
-                    selectInput("tipoevento","Choose event type:",list("Barbecue","Other"),width = '300px'), 
+                    selectInput("tipoevento","Choose event type:",list("Barbecue","Lunch","Dinner","Other"),width = '300px'), 
                     selectInput("clima", "Choose type of weather:",list("Hot","Mild","Cold")),  
                     selectInput("hora", "Choose time range:",list("Day time","Night time")),  
                     selectInput("configevento", "Choose config:",list("beer","cleanig service","water")),
@@ -313,19 +319,39 @@ server <- function(input, output) {
     "You have selected this"
   })
   
-  output$selected_event <- renderText({ 
-    paste("Event:", input$select)
+  output$selected_source <- renderText({ 
+    paste("Source:", input$select_source)
+  })
+  
+  output$selected_clima <- renderText({ 
+    paste("Weather:", input$select_clima)
+  })
+  
+  output$selected_hora <- renderText({ 
+    paste("Time Range:", input$select_hora)
   })
   
   output$selected_date <- renderText({ 
-    paste("Data:", input$date[1])
+    paste("Data:", input$select_date)
   })
   
-  output$selected_hour <- renderText({ 
-    paste("Hour:", input$slider5)
+  output$table_events <- renderTable({ 
+    
+    fileXls1 <- paste(working.directory,"datasetKDB.xlsx",sep='/')
+    exc1 <- loadWorkbook(fileXls1, create = TRUE)
+    
+    #1º copia conteudo do datasetkdb.xls para esta df
+    datasetevents <- readWorksheet(exc1,"datasetkdb", header = TRUE)                      
+    #datasetevents2 <-  data.frame(datasetevents,"source"=paste(input$select_source),"tipo.evento","clima","hora","id")
+    datasetevents<-subset(datasetevents, source==paste(input$select_source))
+    datasetevents<-subset(datasetevents, clima==paste(input$select_clima))
+    datasetevents<-subset(datasetevents, hora==paste(input$select_hora))
   })
   
   
+  
+
+  ##tab de adicao eventos  
   
   output$selected_var1 <- renderText({ 
     "You have selected this"
