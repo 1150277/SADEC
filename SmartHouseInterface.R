@@ -8,44 +8,50 @@ library(shinymaterial)
 library(readr)
 library(ggplot2)
 library(scales) 
+library(XLConnect)
+library(lubridate)
+library(plyr)
+library(arules)
+library(DT)
+library(data.table)
 
 # Set the working directory
-# setwd("C:/Fred_Data/ISEP/SADEC/SADEC/Projecto 3/Projecto R Fred/SADEC")
+ setwd("C:/Fred_Data/ISEP/SADEC/SADEC/Projecto 3/Projecto R Fred/SADEC")
 
-#working.directory<-"c:/Fred_Data/ISEP/SADEC/SADEC/Projecto 3/Projecto R Fred/SADEC"
+working.directory<-"c:/Fred_Data/ISEP/SADEC/SADEC/Projecto 3/Projecto R Fred/SADEC"
 #working.directory<-"C:/Users/jferreira/Dropbox/SADEC/Projecto 3"
-working.directory<-"C:/Users/jferreira/Documents/SADEC"
+#working.directory<-"C:/Users/jferreira/Documents/SADEC"
 
 ui <- dashboardPage(
   dashboardHeader(title = "Smart House Control",
                   dropdownMenu(type = "notifications",
                                notificationItem(
-                                 text = "5 new users today",
+                                 text = "3 users logged today",
                                  icon("users")
                                ),
                                notificationItem(
                                  text = "12 items delivered",
-                                 icon("truck"),
+                                 icon("shopping-cart"),
                                  status = "success"
                                ),
                                notificationItem(
-                                 text = "Server load at 86%",
+                                 text = "UPS Batteries charged at 72%",
                                  icon = icon("exclamation-triangle"),
                                  status = "warning"
                                )
                   ),
                   dropdownMenu(type = "tasks", badgeStatus = "success",
                                taskItem(value = 90, color = "green",
-                                        "Shopping"
+                                        "Shopping Approve Order"
                                ),
                                taskItem(value = 17, color = "aqua",
-                                        "Project X"
+                                        "Check House Lights"
                                ),
                                taskItem(value = 75, color = "yellow",
-                                        "Server deployment"
+                                        "Swimming Pool Clean"
                                ),
                                taskItem(value = 80, color = "red",
-                                        "Overall project"
+                                        "Garden Water Drainage "
                                )
                   )
                   
@@ -55,12 +61,12 @@ ui <- dashboardPage(
     sidebarMenu(
       menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard")),
       menuItem("Controls", tabName = "controls", icon = icon("th")),
-      menuItem("Events", tabName = "events", icon = icon("calendar")),
+      menuItem("Schedulle Event", tabName = "sevent", icon = icon("calendar")),
+      menuItem("Recomendations", tabName = "recomendations", icon = icon("cubes")),
       menuItem("Charts", tabName = "charts", icon = icon("area-chart")),
       menuItem("Config", tabName = "config", icon = icon("home")),
-      menuItem("Help", tabName = "help", icon = icon("question")),
-      menuItem("Recomendations", tabName = "recomendations", icon = icon("question")),
-      menuItem("Schedulle Event", tabName = "sevent", icon = icon("home"))
+      menuItem("Help", tabName = "help", icon = icon("question"))
+      
     )
   ),
   ## Body content
@@ -78,11 +84,12 @@ ui <- dashboardPage(
               
               # infoBoxes with fill=FALSE
               fluidRow(
-                # A static infoBox
-                infoBox("New Orders", 10 * 2, icon = icon("credit-card")),
                 # Dynamic infoBoxes
-                infoBoxOutput("progressBox"),
-                infoBoxOutput("approvalBox")
+                infoBoxOutput("temperatureBox"),
+                infoBoxOutput("lightsBox"),
+                infoBoxOutput("alarmBox"),
+                # A static infoBox
+                infoBox("Shopping List", 10 * 2, icon = icon("shopping-cart"))
               )
               
       ),
@@ -169,160 +176,59 @@ ui <- dashboardPage(
       # Seventh tab content
       tabItem(tabName = "recomendations",
               fluidRow(
-                shinyApp(
+              
                   
-                  ui = fluidPage(
-      
-                    selectInput("tipoevento","Choose event type:",list("Barbecue","Other"),width = '300px'), 
-                    selectInput("clima", "Choose type of weather:",list("Hot","Mild","Cold")),  
-                    selectInput("hora", "Choose time range:",list("Day time","Night time")),  
-                    actionButton("goButton", "Ask for recomendations") , 
-                    #textOutput("message"),
-                    #submitButton("Ask for recomendation"),
- 
-                    box(tableOutput("table")
-                   #isto oculta uma mensagem de erro que não estou a conseguir perceber
+                  box(title = "Event Date", background = "blue", solidHeader = TRUE,
+                     selectInput("tipoevento","Choose event type:",list("Barbecue","Other"),width = '300px'), 
+                      selectInput("clima", "Choose type of weather:",list("Hot","Mild","Cold")),  
+                      selectInput("hora", "Choose time range:",list("Day time","Night time")), 
+                     actionButton("goButton", "Ask for recomendations"),submitButton("Submit")
+                     #textOutput("message"),
+                     #submitButton("Ask for recomendation")
+                      
+                  )
+                
+                
+              ),#close fluidrow
+              
+              mainPanel(
+                
+                box(title = "Recommendations", background = "green", solidHeader = TRUE,tableOutput("table")
+                    #isto oculta uma mensagem de erro que não estou a conseguir perceber
                     ,tags$style(type="text/css",
                                 ".shiny-output-error { visibility: hidden; }",
                                 ".shiny-output-error:before { visibility: hidden; }")
-                  )), #close fluid page
-                  
-                  server = function(input, output) {
-             
-                    #runandmessage <- eventReactive(input$goButton, ({
-                    observeEvent(input$goButton, {
-                    # RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
-                    #install.packages("lubridate")
-                    #install.packages("plyr")
-                    #install.packages("arules")
-                    #install.packages("data.table")
-                    #install.packages("DT")
-                    #install.packages("XLConnect")
-                    library("XLConnect")
-                    library("lubridate")
-                    library("plyr")
-                    library("arules")
-                    library("DT")
-                    library("data.table")
-                    fileXls <- paste(working.directory,"datasetKDB.xlsx",sep='/')
-                    exc <- loadWorkbook(fileXls, create = TRUE)
-                    
-                    kdb <- readWorksheet(exc,"datasetkdb", header = TRUE)
-                    kdb<-as(kdb,"data.frame")
-                    #saveWorkbook(exc)
-                    #criar coluna recomendação = tipo.config + valor
-                    kdb$recomendacao=sapply(paste0(kdb$tipo.config),as.factor)
-                    #eliminar coluna id, tipo.config e valor
-                    kdb$id <- NULL
-                    kdb$tipo.config <- NULL
-                    kdb$source <- NULL
-                    #filtrar condições -------------------------------------------------------------------
-                    kdb <- kdb[!kdb$hora != paste(input$hora), ]
-                    kdb <- kdb[!kdb$tipo.casa != "type1", ]
-                    kdb <- kdb[!kdb$clima != paste(input$clima), ]
-                    kdb <- kdb[!kdb$tipo.evento != paste(input$tipoevento), ]
-                    #apriori
-                    kdb$tipo.casa=sapply(kdb$tipo.casa,as.factor)
-                    kdb$tipo.evento=sapply(kdb$tipo.evento,as.factor)
-                    kdb$valor=sapply(kdb$valor,as.factor)
-                    kdb$clima=sapply(kdb$clima,as.factor)
-                    kdb$hora=sapply(kdb$hora,as.factor)
-                    rules <- apriori(kdb,control = list(verbose=F),
-                                     parameter = list(minlen=5, supp=0.001, conf=0.001))
-                    rules<- sort(rules, by="support")
-                    
-                    rules <- subset(rules, subset = rhs %pin% "recomendacao=")
-                    rules <- subset(rules, subset = lhs %pin% "valor=")
-                    rules <- subset(rules, subset = lhs %ain% c( paste0("tipo.evento=",input$tipoevento)
-                                                                 ,paste0("clima=",input$clima)
-                                                                 ,paste0("hora=",input$hora)
-                                                                 ,"tipo.casa=type1"))
-
-                    #write(rules, file="rules", sep=",", quote=TRUE, row.names=FALSE)                 
-                    myruleslist <- data.table( lhs = labels( lhs(rules) ),rhs = labels( rhs(rules) ), 
-                                               quality(rules) )[ order(-lift), ]
-                    df_myruleslist<-as(myruleslist,"data.frame")
-                    df_myruleslist$recomendation<-substr(df_myruleslist$rhs,regexpr('=', df_myruleslist$rhs)+1,nchar(df_myruleslist$rhs)-1)
-                    df_myruleslist$value<-substr(df_myruleslist$lhs,
-                                                 regexpr('valor=', df_myruleslist$lhs)+6,nchar(df_myruleslist$lhs))
-                    df_myruleslist$value<-substr(df_myruleslist$value,1,regexpr(',', df_myruleslist$value)-1)
-                    
-                    recomendations<-df_myruleslist[c("recomendation", "value","support")]
-                    # RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
-                    output$table <- renderTable ({recomendations[1:3]},spacing = "xs")
-
-
-                    }) #close observe
-
-                      
-                    #}) #close event reactive parameter
-                    #) #close event reactive
-                    
-                    
-                    #output$message <- renderText ({runandmessage()})
-                  } #close function
-                  
-                  
-                ) #close shinnyapp
-                
-              )#close fluidrow
+                )
+              )
+              
               
       ),#close tabitem
       
       # Eighth tab content
       tabItem(tabName = "sevent",
               fluidRow(
-                shinyApp(
+                
                   
-                  ui = fluidPage(
-                    
+                box(title = "Event Date", background = "blue", solidHeader = TRUE,
                     selectInput("tipoevento","Choose event type:",list("Barbecue","Other"),width = '300px'), 
                     selectInput("clima", "Choose type of weather:",list("Hot","Mild","Cold")),  
                     selectInput("hora", "Choose time range:",list("Day time","Night time")),  
-                    selectInput("configevento", "Choose config:",list("beer","cleanig service")),
-                    actionButton("goButtonSave", "Save Event") 
-
-                    ), #close fluid page
-                  
-                  server = function(input, output) {
+                    selectInput("configevento", "Choose config:",list("beer","cleanig service","water")),
+                    actionButton("goButtonSave", "Save Event") ,submitButton("Submit") 
+                    #textOutput("message"),
+                    #submitButton("Ask for recomendation")
                     
-                    #runandmessage <- eventReactive(input$goButton, ({
-                    observeEvent(input$goButtonSave, {
-                      library("XLConnect")
-                      library("lubridate")
-                      library("plyr")
-                      library("arules")
-                      library("DT")
-                      library("data.table")
-                      fileXls <- paste(working.directory,"datasetKDB.xlsx",sep='/')
-                      exc <- loadWorkbook(fileXls, create = TRUE)
+                )
                     
-                    #1º copia conteudo do datasetkdb.xls para esta df
-                         datasetkdb <- readWorksheet(exc,"datasetkdb", header = TRUE)                      
-                    #2º abre o datasetkdb.xls e escreve lá tudo o que estava mais o novo registo
-                    fileXls <- paste(working.directory,"datasetKDB.xlsx",sep='/')
-                    exc <- loadWorkbook(fileXls, create = TRUE)
-                        datasetkdb <- rbind( datasetkdb, data.frame("source"="H", 
-                                                      "tipo.casa"="type1", 
-                                                      "tipo.evento"=paste(input$tipoevento),
-                                                       "tipo.config"=paste(input$configevento), 
-                                                      "valor"="na", 
-                                                      "clima"=paste(input$clima), 
-                                                      "hora"=paste(input$hora), 
-                                                      "id"="new3"))
-                        writeWorksheet(exc, datasetkdb, sheet = "datasetkdb", startRow = 1, startCol = 1)
-                        saveWorkbook(exc)
-                    
-                    
-                    
-                    }) #close observe
-                    
-                  } #close function
-                  
-                  
-                ) #close shinnyapp
+               
                 
-              )#close fluidrow
+              ),#close fluidrow
+              
+              mainPanel(
+                box(title = "Recommendations", background = "green", solidHeader = TRUE,textOutput("selected_var1"),
+                    textOutput("selected_event1"),textOutput("selected_config1"),textOutput("selected_date1"),textOutput("selected_hour1"))
+              )
+              
               
       )#close tabitem      
       
@@ -333,7 +239,7 @@ ui <- dashboardPage(
 
 
 
-server <- function(input, output,session) {
+server <- function(input, output) {
   set.seed(122)
   
   
@@ -383,16 +289,23 @@ server <- function(input, output,session) {
                    limits = as.Date(c(x11,x12)))
   })
   
-  output$progressBox <- renderInfoBox({
+  output$temperatureBox <- renderInfoBox({
     infoBox(
-      "Progress", paste0(25 + input$count, "%"), icon = icon("list"),
+      "House Temperature",paste0(0 + input$slider1, "ºC"), icon = icon("thermometer-full"),
       color = "purple"
     )
+    
   })
-  output$approvalBox <- renderInfoBox({
+  output$lightsBox <- renderInfoBox({
     infoBox(
-      "Approval", "80%", icon = icon("thumbs-up", lib = "glyphicon"),
+      "House Lights", "On", icon = icon("lightbulb-o"),
       color = "yellow"
+    )
+  })
+  output$alarmBox <- renderInfoBox({
+    infoBox(
+      "House Alarm", "Off", icon = icon("key"),
+      color = "blue"
     )
   })
   
@@ -412,6 +325,127 @@ server <- function(input, output,session) {
     paste("Hour:", input$slider5)
   })
   
+  
+  
+  output$selected_var1 <- renderText({ 
+    "You have selected this"
+  })
+  
+  output$selected_event1 <- renderText({ 
+    paste("Event:", input$tipoevento)
+  })
+  
+  output$selected_config1 <- renderText({ 
+    paste("Config:", input$configevento)
+  })
+  
+  output$selected_date1 <- renderText({ 
+    paste("Clima:", input$clima)
+  })
+  
+  output$selected_hour1 <- renderText({ 
+    paste("Hour:", input$hora)
+  })
+  
+  
+##componente Eventos 
+  #runandmessage <- eventReactive(input$goButtonSave, ({
+  observeEvent(input$goButtonSave, {
+    
+    fileXls <- paste(working.directory,"datasetKDB.xlsx",sep='/')
+    exc <- loadWorkbook(fileXls, create = TRUE)
+    
+    #1º copia conteudo do datasetkdb.xls para esta df
+    datasetkdb <- readWorksheet(exc,"datasetkdb", header = TRUE)                      
+    #2º abre o datasetkdb.xls e escreve lá tudo o que estava mais o novo registo
+    fileXls <- paste(working.directory,"datasetKDB.xlsx",sep='/')
+    exc <- loadWorkbook(fileXls, create = TRUE)
+    datasetkdb <- rbind( datasetkdb, data.frame("source"="H", 
+                                                "tipo.casa"="type1", 
+                                                "tipo.evento"=paste(input$tipoevento),
+                                                "tipo.config"=paste(input$configevento), 
+                                                "valor"="na", 
+                                                "clima"=paste(input$clima), 
+                                                "hora"=paste(input$hora), 
+                                                "id"="new3"))
+    writeWorksheet(exc, datasetkdb, sheet = "datasetkdb", startRow = 1, startCol = 1)
+    saveWorkbook(exc)
+    
+  }) #close observe
+  
+
+##componente Recomendacoes  
+  #runandmessage <- eventReactive(input$goButton, ({
+  observeEvent(input$goButton, {
+    # RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
+    #install.packages("lubridate")
+    #install.packages("plyr")
+    #install.packages("arules")
+    #install.packages("data.table")
+    #install.packages("DT")
+    #install.packages("XLConnect")
+    library("XLConnect")
+    library("lubridate")
+    library("plyr")
+    library("arules")
+    library("DT")
+    library("data.table")
+    fileXls <- paste(working.directory,"datasetKDB.xlsx",sep='/')
+    exc <- loadWorkbook(fileXls, create = TRUE)
+    
+    kdb <- readWorksheet(exc,"datasetkdb", header = TRUE)
+    kdb<-as(kdb,"data.frame")
+    #saveWorkbook(exc)
+    #criar coluna recomendação = tipo.config + valor
+    kdb$recomendacao=sapply(paste0(kdb$tipo.config),as.factor)
+    #eliminar coluna id, tipo.config e valor
+    kdb$id <- NULL
+    kdb$tipo.config <- NULL
+    kdb$source <- NULL
+    #filtrar condições -------------------------------------------------------------------
+    kdb <- kdb[!kdb$hora != paste(input$hora), ]
+    kdb <- kdb[!kdb$tipo.casa != "type1", ]
+    kdb <- kdb[!kdb$clima != paste(input$clima), ]
+    kdb <- kdb[!kdb$tipo.evento != paste(input$tipoevento), ]
+    #apriori
+    kdb$tipo.casa=sapply(kdb$tipo.casa,as.factor)
+    kdb$tipo.evento=sapply(kdb$tipo.evento,as.factor)
+    kdb$valor=sapply(kdb$valor,as.factor)
+    kdb$clima=sapply(kdb$clima,as.factor)
+    kdb$hora=sapply(kdb$hora,as.factor)
+    rules <- apriori(kdb,control = list(verbose=F),
+                     parameter = list(minlen=5, supp=0.001, conf=0.001))
+    rules<- sort(rules, by="support")
+    
+    rules <- subset(rules, subset = rhs %pin% "recomendacao=")
+    rules <- subset(rules, subset = lhs %pin% "valor=")
+    rules <- subset(rules, subset = lhs %ain% c( paste0("tipo.evento=",input$tipoevento)
+                                                 ,paste0("clima=",input$clima)
+                                                 ,paste0("hora=",input$hora)
+                                                 ,"tipo.casa=type1"))
+    
+    #write(rules, file="rules", sep=",", quote=TRUE, row.names=FALSE)                 
+    myruleslist <- data.table( lhs = labels( lhs(rules) ),rhs = labels( rhs(rules) ), 
+                               quality(rules) )[ order(-lift), ]
+    df_myruleslist<-as(myruleslist,"data.frame")
+    df_myruleslist$recomendation<-substr(df_myruleslist$rhs,regexpr('=', df_myruleslist$rhs)+1,nchar(df_myruleslist$rhs)-1)
+    df_myruleslist$value<-substr(df_myruleslist$lhs,
+                                 regexpr('valor=', df_myruleslist$lhs)+6,nchar(df_myruleslist$lhs))
+    df_myruleslist$value<-substr(df_myruleslist$value,1,regexpr(',', df_myruleslist$value)-1)
+    
+    recomendations<-df_myruleslist[c("recomendation", "value","support")]
+    # RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
+    output$table <- renderTable ({recomendations[1:3]},spacing = "xs")
+    
+    
+  }) #close observe
+  
+  
+  #}) #close event reactive parameter
+  #) #close event reactive
+  
+  
+  #output$message <- renderText ({runandmessage()})
   
   
 }
