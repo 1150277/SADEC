@@ -16,11 +16,12 @@ library(DT)
 library(data.table)
 
 # Set the working directory
- setwd("C:/Fred_Data/ISEP/SADEC/SADEC/Projecto 3/Projecto R Fred/SADEC")
+ #setwd("C:/Fred_Data/ISEP/SADEC/SADEC/Projecto 3/Projecto R Fred/SADEC")
+ setwd("C:/Users/jferreira/Documents/SADEC")
 
-working.directory<-"c:/Fred_Data/ISEP/SADEC/SADEC/Projecto 3/Projecto R Fred/SADEC"
+#working.directory<-"c:/Fred_Data/ISEP/SADEC/SADEC/Projecto 3/Projecto R Fred/SADEC"
 #working.directory<-"C:/Users/jferreira/Dropbox/SADEC/Projecto 3"
-#working.directory<-"C:/Users/jferreira/Documents/SADEC"
+working.directory<-"C:/Users/jferreira/Documents/SADEC"
 
 ui <- dashboardPage(
   dashboardHeader(title = "Smart House Control",
@@ -459,6 +460,8 @@ server <- function(input, output) {
                                  regexpr('valor=', df_myruleslist$lhs)+6,nchar(df_myruleslist$lhs))
     df_myruleslist$value<-substr(df_myruleslist$value,1,regexpr(',', df_myruleslist$value)-1)
     
+    
+    df_myruleslist<-df_myruleslist[order(-df_myruleslist$support),]
     recomendations<-df_myruleslist[c("recomendation", "value","support")]
     # RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
     output$table <- renderTable ({recomendations[1:3]},spacing = "xs")
