@@ -215,12 +215,11 @@ ui <- dashboardPage(
       tabItem(tabName = "sevent",
               fluidRow(
                 
-                  
                 box(title = "Event Date", background = "blue", solidHeader = TRUE,
                     selectInput("tipoevento","Choose event type:",list("Barbecue","Lunch","Dinner","Other"),width = '300px'), 
                     selectInput("clima", "Choose type of weather:",list("Hot","Mild","Cold")),  
                     selectInput("hora", "Choose time range:",list("Day time","Night time")),  
-                    selectInput("configevento", "Choose config:",list("beer","cleanig service","water")),
+                    selectInput("configevento", "Choose config:",list("beer","cleaning service","meat","water","check grill")),
                     actionButton("goButtonSave", "Save Event") ,submitButton("Submit") 
                     #textOutput("message"),
                     #submitButton("Ask for recomendation")
