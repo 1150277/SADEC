@@ -216,10 +216,10 @@ ui <- dashboardPage(
               fluidRow(
                 
                 box(title = "Event Date", background = "blue", solidHeader = TRUE,
-                    selectInput("tipoevento","Choose event type:",list("Barbecue","Lunch","Dinner","Other"),width = '300px'), 
-                    selectInput("clima", "Choose type of weather:",list("Hot","Mild","Cold")),  
-                    selectInput("hora", "Choose time range:",list("Day time","Night time")),  
-                    selectInput("configevento", "Choose config:",list("beer","cleaning service","meat","water","check grill")),
+                    selectInput("tipoevento1","Choose event type:",list("Barbecue","Lunch","Dinner","Other"),width = '300px'), 
+                    selectInput("clima1", "Choose type of weather:",list("Hot","Mild","Cold")),  
+                    selectInput("hora1", "Choose time range:",list("Day time","Night time")),  
+                    selectInput("configevento1", "Choose config:",list("beer","cleaning service","meat","water","check grill")),
                     actionButton("goButtonSave", "Save Event") ,submitButton("Submit") 
                     #textOutput("message"),
                     #submitButton("Ask for recomendation")
@@ -358,19 +358,19 @@ server <- function(input, output) {
   })
   
   output$selected_event1 <- renderText({ 
-    paste("Event:", input$tipoevento)
+    paste("Event:", input$tipoevento1)
   })
   
   output$selected_config1 <- renderText({ 
-    paste("Config:", input$configevento)
+    paste("Config:", input$configevento1)
   })
   
   output$selected_date1 <- renderText({ 
-    paste("Clima:", input$clima)
+    paste("Clima:", input$clima1)
   })
   
   output$selected_hour1 <- renderText({ 
-    paste("Hour:", input$hora)
+    paste("Hour:", input$hora1)
   })
   
   
@@ -388,11 +388,11 @@ server <- function(input, output) {
     exc <- loadWorkbook(fileXls, create = TRUE)
     datasetkdb <- rbind( datasetkdb, data.frame("source"="H", 
                                                 "tipo.casa"="type1", 
-                                                "tipo.evento"=paste(input$tipoevento),
-                                                "tipo.config"=paste(input$configevento), 
+                                                "tipo.evento"=paste(input$tipoevento1),
+                                                "tipo.config"=paste(input$configevento1), 
                                                 "valor"="na", 
-                                                "clima"=paste(input$clima), 
-                                                "hora"=paste(input$hora), 
+                                                "clima"=paste(input$clima1), 
+                                                "hora"=paste(input$hora1), 
                                                 "id"="new3"))
     writeWorksheet(exc, datasetkdb, sheet = "datasetkdb", startRow = 1, startCol = 1)
     saveWorkbook(exc)
